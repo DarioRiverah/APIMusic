@@ -1,0 +1,14 @@
+.gcloudignore
+.git/
+.gitignore
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+tests/
+.env
+.env.*
+env.yaml
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
+diag.py

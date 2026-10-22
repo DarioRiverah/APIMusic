@@ -1,0 +1,25 @@
+import { useEffect } from 'react'
+import Icono from './Icono.jsx'
+
+export default function Modal({ titulo, onCerrar, children, ancho = 560 }) {
+  useEffect(() => {
+    const alTeclear = (e) => e.key === 'Escape' && onCerrar()
+    window.addEventListener('keydown', alTeclear)
+    return () => window.removeEventListener('keydown', alTeclear)
+  }, [onCerrar])
+
+  return (
+    <div className="modal-fondo" onMouseDown={(e) => e.target === e.currentTarget && onCerrar()}>
+      <div className="modal" style={{ maxWidth: ancho }} role="dialog" aria-modal="true"
+        aria-label={titulo}>
+        <header className="modal-cabecera">
+          <h2>{titulo}</h2>
+          <button className="btn-icono" onClick={onCerrar} aria-label="Cerrar">
+            <Icono nombre="cerrar" />
+          </button>
+        </header>
+        {children}
+      </div>
+    </div>
+  )
+}

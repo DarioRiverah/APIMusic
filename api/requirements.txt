@@ -1,0 +1,9 @@
+flask
+flask-cors
+pyjwt
+firebase-admin
+python-dotenv
+requests
+mutagen
+pytest
+gunicorn
