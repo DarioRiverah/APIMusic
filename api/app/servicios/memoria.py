@@ -5,6 +5,7 @@ from . import Servicios
 from .firebase import ErrorAuth
 from ..repos.memoria_repo import ColeccionMemoria, UsuariosMemoria
 from .correo import CorreoMemoria
+from .voz import VozMemoria
 
 
 class StorageMemoria:
@@ -61,4 +62,5 @@ def crear_servicios_memoria():
     return Servicios(canciones=ColeccionMemoria(), artistas=ColeccionMemoria(),
                      albumes=ColeccionMemoria(), usuarios=UsuariosMemoria(),
                      verificaciones=ColeccionMemoria(), correo=CorreoMemoria(),
-                     storage=StorageMemoria(), auth=AuthMemoria())
+                     storage=StorageMemoria(), auth=AuthMemoria(),
+                     dj=ColeccionMemoria(), voz=VozMemoria())

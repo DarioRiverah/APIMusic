@@ -19,6 +19,7 @@ import AdminCanciones from './pages/admin/Canciones.jsx'
 import AdminArtistas from './pages/admin/Artistas.jsx'
 import AdminAlbumes from './pages/admin/Albumes.jsx'
 import Recuperar from './pages/Recuperar.jsx'
+import Ajustes from './pages/Ajustes.jsx'
 
 /** Rutas para usuarios con sesión: cargan catálogo, favoritos y el reproductor global. */
 function ConSesion() {
@@ -64,6 +65,7 @@ export default function App() {
           <Route path="/favoritos" element={<Favoritos />} />
           <Route path="/generar" element={<Generar />} />
           <Route path="/perfil" element={<Perfil />} />
+          <Route path="/ajustes" element={<Ajustes />} />
         </Route>
         <Route element={<SoloAdmin />}>
           <Route element={<LayoutAdmin />}>

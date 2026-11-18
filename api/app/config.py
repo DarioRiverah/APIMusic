@@ -12,7 +12,7 @@ class Config:
     FIREBASE_WEB_API_KEY = os.getenv('FIREBASE_WEB_API_KEY', '')
     _origenes = [o.strip() for o in os.getenv('CORS_ORIGENES', '*').split(',') if o.strip()]
     CORS_ORIGENES = '*' if _origenes in ([], ['*']) else _origenes
-    NOMBRE_APP = os.getenv('NOMBRE_APP', 'APIMusic')
+    NOMBRE_APP = os.getenv('NOMBRE_APP', 'UnderTone')
     LOGO_URL = os.getenv('LOGO_URL', '')                 # URL pública del logo PNG (opcional)
     WEB_URL = os.getenv('WEB_URL', 'http://localhost:5173')   # botón "Empezar a escuchar"
 
@@ -30,4 +30,13 @@ class Config:
     GENEROS = ('rock', 'pop', 'salsa', 'vallenato', 'reggaeton', 'jazz',
                'electronica', 'rap', 'clasica', 'otro')
     MAX_AUDIO_MB = 15
+
+    # DJ: voz con Google Text-to-Speech (Chirp 3 HD). Apagado = voz del navegador (gratis).
+    TTS_ACTIVO = os.getenv('TTS_ACTIVO', 'no').lower() in ('si', 'sí', '1', 'true')
+    TTS_VOZ = os.getenv('TTS_VOZ', 'es-US-Chirp3-HD-Laomedeia')
+    # Tope de caracteres al mes: el plan gratis de Chirp 3 HD es 1.000.000, se corta antes
+    TTS_VELOCIDAD = float(os.getenv('TTS_VELOCIDAD', '1.05'))
+    TTS_LIMITE_MENSUAL = int(os.getenv('TTS_LIMITE_MENSUAL', '800000'))
+    DJ_SESIONES_VOZ_DIA = int(os.getenv('DJ_SESIONES_VOZ_DIA', '20'))   # por usuario
+    NOMBRE_DJ = os.getenv('NOMBRE_DJ', 'Lia')
     MAX_PORTADA_MB = 2

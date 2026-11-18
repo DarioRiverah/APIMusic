@@ -7,7 +7,7 @@ from email.message import EmailMessage
 class CorreoSMTP:
     """Funciona con Gmail (contraseña de aplicación), Brevo, Outlook, etc."""
 
-    def __init__(self, host, puerto, usuario, clave, remitente, nombre='APIMusic'):
+    def __init__(self, host, puerto, usuario, clave, remitente, nombre='UnderTone'):
         self.host, self.puerto = host, int(puerto)
         self.usuario, self.clave = usuario, clave
         self.remitente = remitente or usuario
@@ -56,7 +56,7 @@ class CorreoMemoria:
 #  Hechas con tablas y estilos en línea: es lo único que respetan Gmail,
 #  Outlook y Apple Mail por igual (no admiten <style> externos ni flexbox).
 # =====================================================================
-VERDE = '#1ed760'
+ACENTO = '#FF3B5C'          # rosado de UnderTone
 FONDO = '#0b0b0b'
 TARJETA = '#171717'
 TEXTO_TENUE = '#a7a7a7'
@@ -66,9 +66,9 @@ FUENTE = "'Helvetica Neue',Helvetica,Arial,sans-serif"
 def _logo(app, logo_url):
     if logo_url:
         return (f'<img src="{logo_url}" width="40" height="40" alt="{app}" '
-                f'style="display:block;border:0;border-radius:50%">')
-    # Respaldo si no hay imagen pública: círculo verde con una nota
-    return (f'<div style="width:40px;height:40px;border-radius:50%;background:{VERDE};color:#000;'
+                f'style="display:block;border:0;border-radius:11px">')
+    # Respaldo si no hay imagen pública: cuadro rosado con una nota
+    return (f'<div style="width:40px;height:40px;border-radius:11px;background:{ACENTO};color:#fff;'
             f'font-size:22px;line-height:40px;text-align:center;font-weight:700">&#9835;</div>')
 
 
@@ -92,7 +92,7 @@ def _marco(app, logo_url, preheader, contenido, pie):
     <tr><td style="background:{TARJETA};border-radius:16px;overflow:hidden">
       <!-- Cabecera de marca -->
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
-        bgcolor="#123d24" style="background:#123d24;background-image:linear-gradient(160deg,#1f6b3d 0%,#123d24 45%,{TARJETA} 100%)">
+        bgcolor="#3a1219" style="background:#3a1219;background-image:linear-gradient(160deg,#7a1d30 0%,#3a1219 45%,{TARJETA} 100%)">
         <tr><td style="padding:28px 32px 26px">
           <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
             <td style="vertical-align:middle">{_logo(app, logo_url)}</td>
@@ -120,12 +120,12 @@ def _casillas(codigo):
     """Cada dígito en su propia casilla con borde verde."""
     return ''.join(
         f'<td style="padding:0 3px"><div style="width:44px;height:56px;line-height:56px;'
-        f'background:#232323;border:1px solid #2f2f2f;border-bottom:3px solid {VERDE};border-radius:10px;'
+        f'background:#232323;border:1px solid #2f2f2f;border-bottom:3px solid {ACENTO};border-radius:10px;'
         f'font-family:\'SF Mono\',Menlo,Consolas,monospace;font-size:28px;font-weight:700;color:#fff;'
         f'text-align:center">{d}</div></td>' for d in codigo)
 
 
-def plantilla_codigo(nombre, codigo, minutos, app='APIMusic', logo_url=None):
+def plantilla_codigo(nombre, codigo, minutos, app='UnderTone', logo_url=None):
     texto = (f'Hola {nombre},\n\nTu código para confirmar tu cuenta de {app} es: {codigo}\n\n'
              f'Vence en {minutos} minutos. Si no fuiste tú, ignora este correo.')
     casillas = _casillas(codigo)
@@ -136,7 +136,7 @@ def plantilla_codigo(nombre, codigo, minutos, app='APIMusic', logo_url=None):
   Escribe este código en la app para activar tu cuenta:</p>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto"><tr>{casillas}</tr></table>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:20px auto 0"><tr>
-  <td style="background:#10331f;border-radius:99px;padding:7px 14px;font-size:13px;color:{VERDE};font-weight:700">
+  <td style="background:#3a1219;border-radius:99px;padding:7px 14px;font-size:13px;color:{ACENTO};font-weight:700">
     &#9201;&nbsp; Vence en {minutos} minutos</td>
 </tr></table>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:28px">
@@ -149,7 +149,7 @@ def plantilla_codigo(nombre, codigo, minutos, app='APIMusic', logo_url=None):
     return texto, _marco(app, logo_url, f'Tu código es {codigo} · vence en {minutos} min', contenido, pie)
 
 
-def plantilla_bienvenida(nombre, app='APIMusic', web_url='http://localhost:5173', logo_url=None):
+def plantilla_bienvenida(nombre, app='UnderTone', web_url='http://localhost:5173', logo_url=None):
     texto = (f'¡Hola {nombre}!\n\nTu cuenta de {app} ya está lista. Entra y empieza a escuchar: {web_url}\n\n'
              f'- Guarda tus canciones favoritas con el corazón\n- Genera playlists que caben justo en tu tiempo\n'
              f'- Explora artistas y álbumes')
@@ -172,15 +172,15 @@ def plantilla_bienvenida(nombre, app='APIMusic', web_url='http://localhost:5173'
   {fila('&#10024;', 'Generar playlist', 'Dinos cuánto tiempo tienes y la armamos justo a la medida.')}
 </table>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:14px 0 0"><tr>
-  <td style="border-radius:99px;background:{VERDE}">
-    <a href="{web_url}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:{FUENTE};font-size:15px;font-weight:800;color:#000;text-decoration:none;border-radius:99px">Empezar a escuchar &rarr;</a>
+  <td style="border-radius:99px;background:{ACENTO}">
+    <a href="{web_url}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:{FUENTE};font-size:15px;font-weight:800;color:#fff;text-decoration:none;border-radius:99px">Empezar a escuchar &rarr;</a>
   </td>
 </tr></table>"""
     pie = f'Recibiste este correo porque creaste una cuenta en {app}.'
     return texto, _marco(app, logo_url, f'Tu cuenta de {app} está lista', contenido, pie)
 
 
-def plantilla_recuperacion(nombre, codigo, minutos, app='APIMusic', logo_url=None):
+def plantilla_recuperacion(nombre, codigo, minutos, app='UnderTone', logo_url=None):
     texto = (f'Hola {nombre},\n\nTu código para restablecer tu contraseña de {app} es: {codigo}\n\n'
              f'Vence en {minutos} minutos. Si no lo pediste, ignora este correo: tu contraseña sigue igual.')
     contenido = f"""\
@@ -190,7 +190,7 @@ def plantilla_recuperacion(nombre, codigo, minutos, app='APIMusic', logo_url=Non
   de tu cuenta. Escribe este código en la app para crear una nueva:</p>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto"><tr>{_casillas(codigo)}</tr></table>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:20px auto 0"><tr>
-  <td style="background:#10331f;border-radius:99px;padding:7px 14px;font-size:13px;color:{VERDE};font-weight:700">
+  <td style="background:#3a1219;border-radius:99px;padding:7px 14px;font-size:13px;color:{ACENTO};font-weight:700">
     &#9201;&nbsp; Vence en {minutos} minutos</td>
 </tr></table>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:28px">

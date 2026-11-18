@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useOutletContext } from 'react-router-dom'
+import { Link, useOutletContext } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../auth.jsx'
 import { useFavoritos } from '../favoritos.jsx'
@@ -70,6 +70,9 @@ export default function Perfil() {
           <button className="btn btn-primario" disabled={!cambio || guardando}>
             {guardando ? 'Guardando…' : 'Guardar cambios'}
           </button>
+          <Link to="/ajustes" className="btn btn-fantasma">
+            <Icono nombre="ajustes" tam={16} /> Ajustes
+          </Link>
           <button type="button" className="btn btn-fantasma" onClick={() => cerrarSesion()}>
             <Icono nombre="salir" tam={16} /> Cerrar sesión
           </button>

@@ -5,6 +5,7 @@ import { useAuth } from '../auth.jsx'
 import { useCatalogo } from '../catalogo.jsx'
 import Icono from '../components/Icono.jsx'
 import { BotonReproducir, ListaCanciones, Seccion, Tarjeta } from '../components/musica.jsx'
+import TarjetaDJ from '../components/TarjetaDJ.jsx'
 
 function saludo() {
   const h = new Date().getHours()
@@ -31,7 +32,8 @@ export default function Inicio() {
 
   return (
     <div className="pagina">
-      <h1 className="saludo">{saludo()}, {sesion.usuario.nombres?.split(' ')[0]}</h1>
+      <p className="saludo">{saludo()}, {sesion.usuario.nombres?.split(' ')[0]}</p>
+      <h1 className="titulo-pagina">Escuchar ahora</h1>
       {error && <div className="alerta alerta-error">{error}</div>}
 
       {!canciones.length && !error ? (
@@ -42,6 +44,7 @@ export default function Inicio() {
         </div>
       ) : (
         <>
+          <TarjetaDJ />
           <div className="accesos">
             <Link to="/favoritos" className="acceso">
               <span className="acceso-img acceso-favoritos"><Icono nombre="corazon" tam={24} relleno /></span>

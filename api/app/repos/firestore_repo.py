@@ -48,6 +48,10 @@ class ColeccionFirestore:
     def eliminar(self, doc_id):
         self.col.document(doc_id).delete()
 
+    def incrementar(self, doc_id, campo, n=1):
+        """Suma n a un campo numérico de forma atómica (crea el documento si no existe)."""
+        self.col.document(doc_id).set({campo: firestore.Increment(n)}, merge=True)
+
 
 class UsuariosFirestore:
     def __init__(self, db):
@@ -72,3 +76,12 @@ class UsuariosFirestore:
 
     def quitar_favorito(self, uid, cancion_id):
         self.col.document(uid).collection('favoritos').document(cancion_id).delete()
+
+    def agregar_historial(self, uid, cancion_id, ts):
+        self.col.document(uid).collection('historial').add({'cancion_id': cancion_id, 'ts': ts})
+
+    def listar_historial(self, uid, limite=100):
+        """Ids de canciones escuchadas, de la más reciente a la más antigua."""
+        docs = (self.col.document(uid).collection('historial')
+                .order_by('ts', direction=firestore.Query.DESCENDING).limit(limite).stream())
+        return [d.to_dict()['cancion_id'] for d in docs]

@@ -2,17 +2,15 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth.jsx'
 import { googleDisponible } from '../firebase'
-import Icono, { LogoGoogle } from './Icono.jsx'
+import { LogoGoogle } from './Icono.jsx'
+import Marca from './Marca.jsx'
 
 /** Marco común de las pantallas de login, registro y verificación. */
 export function AuthCaja({ titulo, subtitulo, children }) {
   return (
     <main className="login">
       <div className="login-caja">
-        <div className="marca marca-grande">
-          <span className="marca-logo"><Icono nombre="logo" tam={22} /></span>
-          APIMusic
-        </div>
+        <Marca tam={40} className="marca-grande" />
         <h1>{titulo}</h1>
         {subtitulo && <p className="tenue">{subtitulo}</p>}
         {children}

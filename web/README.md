@@ -1,17 +1,19 @@
-# APIMusic · Web
+# UnderTone · Web
 
-Reproductor de música tipo Spotify hecho con React 19, Vite 8, React Router 7 y Firebase Auth (solo para el login con Google). Toda la información viene de la API Flask que está en [`../api`](../api).
+Reproductor de música de UnderTone, hecho con React 19, Vite 8, React Router 7 y Firebase Auth (solo para el login con Google). Toda la información viene de la API Flask que está en [`../api`](../api).
 
 ## Qué se puede hacer
 
 **Usuario**
 - Crear una cuenta con correo y confirmarla con un código, o entrar con Google.
-- Ver en el inicio las canciones agregadas hace poco, los álbumes y los artistas.
+- Ver en el inicio la tarjeta de **DJ Lia**, las canciones agregadas hace poco, los álbumes y los artistas.
+- Escuchar a **DJ Lia**: escoge una vibra (mix, favoritas, descubrir o un género), arma la sesión y presenta cada bloque con voz.
 - Buscar canciones, artistas y álbumes (sin importar las tildes) y explorar por género.
 - Abrir el perfil de un artista (canciones, discografía, apariciones como invitado) y el detalle de un álbum.
 - Marcar canciones como "Me gusta" y escucharlas en la playlist **Tus me gusta**.
 - **Generar una playlist** que quepa en los minutos que indique, con un género opcional.
 - Editar su nombre y apellidos en el perfil, y cerrar sesión.
+- Personalizar la app en **Ajustes**: color, tema de la barra de reproducción, grosor, fondo, letra, brillo, vidrio, animaciones, temporizador de sueño y voz del DJ.
 
 **Admin** (además de todo lo anterior)
 - Entrar al panel `/admin` desde el menú lateral.
@@ -69,20 +71,23 @@ Todas las cuentas nuevas son de usuario. Para convertir una en admin:
 
 ```
 web/
-├── index.html                  HTML base: fuente Figtree, favicon y metadatos
+├── index.html                  HTML base: fuente Inter, favicon y metadatos
 ├── vite.config.js              Configuración de Vite (plugin de React)
 ├── .oxlintrc.json              Reglas del linter
 ├── .env.example                Plantilla de variables de entorno
 ├── public/
-│   └── favicon.svg             Ícono de la pestaña
+│   ├── favicon.svg             Logo de UnderTone (ícono de la pestaña)
+│   └── logo-correo.png         Logo en PNG para los correos
 └── src/
-    ├── main.jsx                Punto de entrada: monta Router + AuthProvider + App
+    ├── main.jsx                Punto de entrada: monta AjustesProvider + Router + AuthProvider + App
+    ├── ajustes.jsx             Contexto de Ajustes: se guarda en localStorage y se aplica como variables CSS
     ├── App.jsx                 Rutas y guardas (sin sesión / con sesión / solo admin)
     ├── api.js                  Cliente HTTP de la API, sesión en localStorage y helpers de formato
     ├── auth.jsx                Contexto de sesión: login, registro, verificación, Google, recuperar clave
     ├── catalogo.jsx            Contexto que carga canciones, artistas, álbumes y géneros una vez
     ├── favoritos.jsx           Contexto con los ids de "Tus me gusta"
-    ├── reproductor.jsx         Contexto del reproductor global (un solo <audio> y la cola)
+    ├── reproductor.jsx         Contexto del reproductor global (un solo <audio>, la cola, el temporizador y el modo DJ)
+    ├── voz-dj.js               Hace hablar al DJ: audio de la API o, si no hay, la voz del navegador
     ├── firebase.js             Popup de Google con Firebase; solo devuelve el ID token
     ├── index.css               Todos los estilos de la app
     ├── components/
@@ -91,6 +96,10 @@ web/
     │   ├── comunes.jsx         Imagen con respaldo, selector de imagen, progreso, confirmar borrado, encabezado
     │   ├── Icono.jsx           Íconos SVG propios y logo de Google
     │   ├── LayoutApp.jsx       Menú lateral, navegación móvil, reproductor y avisos de la app
+    │   ├── Marca.jsx           Nombre y logo de UnderTone
+    │   ├── Munecos.jsx         Dibujos SVG propios de los temas (cohete, pato, gato, rana…)
+    │   ├── TarjetaDJ.jsx       Tarjeta de DJ Lia en el inicio, con las vibras
+    │   ├── TemasBarra.jsx      Lista de temas y la barra de progreso con tema
     │   ├── Modal.jsx           Ventana modal (se cierra con Esc o clic afuera)
     │   ├── musica.jsx          Lista de canciones, tarjetas, secciones, cabeceras y botones de play / me gusta
     │   └── admin/
@@ -110,6 +119,7 @@ web/
         ├── Favoritos.jsx       Playlist "Tus me gusta"
         ├── Generar.jsx         Generador de playlists por duración
         ├── Perfil.jsx          Datos del usuario y cerrar sesión
+        ├── Ajustes.jsx         Color, barra de reproducción, DJ, temporizador y apariencia
         └── admin/
             ├── Canciones.jsx   Tabla de canciones con filtros y estadísticas
             ├── Artistas.jsx    Rejilla de artistas
@@ -131,6 +141,7 @@ web/
 | `/favoritos` | Tus me gusta | ↪ `/login` | ✅ | ✅ |
 | `/generar` | Generar playlist | ↪ `/login` | ✅ | ✅ |
 | `/perfil` | Perfil | ↪ `/login` | ✅ | ✅ |
+| `/ajustes` | Ajustes | ↪ `/login` | ✅ | ✅ |
 | `/admin` | Admin · Canciones | ↪ `/login` | ↪ `/` | ✅ |
 | `/admin/artistas` | Admin · Artistas | ↪ `/login` | ↪ `/` | ✅ |
 | `/admin/albumes` | Admin · Álbumes | ↪ `/login` | ↪ `/` | ✅ |
@@ -161,7 +172,7 @@ La sesión real es un JWT que emite la API. Se guarda en `localStorage` (`apimus
 ## Reproductor
 
 - **Un solo `<audio>`** para toda la sesión (vive en `reproductor.jsx`), así la música sigue al cambiar de página, incluso dentro del panel de admin.
-- **Cola**: al reproducir desde una lista (álbum, artista, búsqueda, me gusta, playlist generada…) esa lista se vuelve la cola. El botón verde de una lista pausa o reanuda solo si lo que suena salió de esa misma lista.
+- **Cola**: al reproducir desde una lista (álbum, artista, búsqueda, me gusta, playlist generada…) esa lista se vuelve la cola. El botón de play de una lista pausa o reanuda solo si lo que suena salió de esa misma lista.
 - **Aleatorio**: mezcla la cola dejando primero la canción actual; al apagarlo vuelve al orden original sin cortar la canción.
 - **Repetir**: cambia entre *no* → *todo* → *una*. Con *una*, al terminar la canción vuelve a empezar; con *todo*, al final de la cola vuelve a la primera.
 - **Anterior**: si ya pasaron más de 3 s reinicia la canción; si no, va a la anterior.
@@ -169,4 +180,18 @@ La sesión real es un JWT que emite la API. Se guarda en `localStorage` (`apimus
 - **Controles del sistema**: usa la Media Session API, así que funcionan las teclas multimedia y los controles de la pantalla de bloqueo del celular, con título, artistas, álbum y portada.
 - **Pestaña**: mientras suena, el título muestra "Canción • Artistas".
 - **Volumen**: se guarda en `localStorage` (`apimusic_volumen`). El botón de la bocina silencia o vuelve a 80 %.
-- **La barra**: en escritorio siempre está abajo (sin canción dice "Elige una canción para empezar"). En el celular (≤ 900 px) y en el panel de admin solo aparece cuando hay una canción cargada; en el celular muestra además una línea fina de progreso.
+- **La barra**: es flotante y solo aparece cuando hay una canción cargada. En el celular (≤ 900 px) muestra además una línea fina de progreso. El tema y el grosor se escogen en Ajustes.
+- **Temporizador de sueño**: pausa la música a los minutos elegidos o al terminar la canción actual.
+- **Historial**: cuando empieza a sonar una canción se avisa a la API (`POST /me/history`); eso alimenta al DJ.
+
+## DJ Lia
+
+1. Al tocar play en la tarjeta del DJ (o una vibra), la web llama a `POST /dj/session` con la vibra y la hora local.
+2. La API devuelve bloques de canciones; la primera canción de cada bloque trae la frase del DJ y, si hay, la URL del audio con su voz.
+3. Como en la radio, esa canción arranca con el volumen bajo y, casi un segundo después, `voz-dj.js` reproduce la voz encima. Al terminar, la música vuelve a subir poco a poco. Si no hay audio o falla, usa la voz más natural en español que tenga el navegador. Mientras habla aparece una burbuja con un botón **Saltar**.
+4. Al acabarse la cola pide otra sesión, así que el DJ no se detiene.
+5. En Ajustes se puede apagar la voz: el DJ solo muestra por escrito lo que diría.
+
+## Ajustes
+
+Se guardan en `localStorage` (`undertone_ajustes`) y se aplican en `<html>` como variables CSS (`--acento`, `--acento-tinta`) y atributos `data-*` (fondo, brillo, vidrio, letra, animaciones, grosor). El color del texto sobre el acento (blanco o negro) se calcula según el contraste. Los temas de la barra usan dibujos SVG propios, no personajes de terceros.

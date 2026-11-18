@@ -106,6 +106,9 @@ export const api = {
   favoritos: () => peticion('/me/favorites'),
   agregarFavorito: (id) => peticion(`/me/favorites/${id}`, { method: 'PUT' }),
   quitarFavorito: (id) => peticion(`/me/favorites/${id}`, { method: 'DELETE' }),
+  registrarEscucha: (cancion_id) => peticion('/me/history', { method: 'POST', body: { cancion_id } }),
+  djSesion: (vibra = 'mix') =>
+    peticion('/dj/session', { method: 'POST', body: { vibra, hora: new Date().getHours() } }),
   generarPlaylist: (duracion_max_minutos, genero) =>
     peticion('/playlists/generate', {
       method: 'POST', body: genero ? { duracion_max_minutos, genero } : { duracion_max_minutos },

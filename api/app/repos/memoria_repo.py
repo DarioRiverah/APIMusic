@@ -34,11 +34,16 @@ class ColeccionMemoria:
     def eliminar(self, doc_id):
         self.datos.pop(doc_id, None)
 
+    def incrementar(self, doc_id, campo, n=1):
+        doc = self.datos.setdefault(doc_id, {})
+        doc[campo] = doc.get(campo, 0) + n
+
 
 class UsuariosMemoria:
     def __init__(self):
         self.datos = {}
         self.favoritos = {}
+        self.historial = {}
 
     def obtener(self, uid):
         u = self.datos.get(uid)
@@ -61,3 +66,9 @@ class UsuariosMemoria:
     def quitar_favorito(self, uid, cancion_id):
         if cancion_id in self.favoritos.get(uid, []):
             self.favoritos[uid].remove(cancion_id)
+
+    def agregar_historial(self, uid, cancion_id, ts):
+        self.historial.setdefault(uid, []).insert(0, cancion_id)
+
+    def listar_historial(self, uid, limite=100):
+        return list(self.historial.get(uid, [])[:limite])

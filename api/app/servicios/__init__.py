@@ -12,6 +12,8 @@ class Servicios:
     correo: Any         # envío de correos
     storage: Any        # subida/borrado de archivos
     auth: Any           # registro y verificación de credenciales
+    dj: Any = None      # colección 'dj': caché de voces y contadores de uso
+    voz: Any = None     # texto a voz (Google Chirp 3 HD) o None = voz del navegador
 
 
 def servicios():

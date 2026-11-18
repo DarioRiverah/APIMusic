@@ -1,8 +1,8 @@
-# APIMusic — API
+# UnderTone — API
 
-API REST de APIMusic, un catálogo musical para escuchar canciones, guardar favoritas y generar playlists que caben en el tiempo que tengas. Está hecha en Flask y usa Firebase: Firestore para los datos, Storage para audios e imágenes y Authentication para las cuentas. Las sesiones usan un JWT propio. La consume la web de [`../web`](../web).
+API REST de UnderTone (antes APIMusic), un catálogo musical para escuchar canciones, guardar favoritas y generar playlists que caben en el tiempo que tengas. Está hecha en Flask y usa Firebase: Firestore para los datos, Storage para audios e imágenes y Authentication para las cuentas. Las sesiones usan un JWT propio. La consume la web de [`../web`](../web).
 
-- **Un usuario** puede registrarse con correo (lo confirma con un código de 6 dígitos) o con Google, iniciar sesión, recuperar la contraseña, editar su nombre, explorar canciones, artistas, álbumes y géneros, buscar, marcar favoritas y generar playlists por duración y género.
+- **Un usuario** puede registrarse con correo (lo confirma con un código de 6 dígitos) o con Google, iniciar sesión, recuperar la contraseña, editar su nombre, explorar canciones, artistas, álbumes y géneros, buscar, marcar favoritas, generar playlists por duración y género, y escuchar sesiones de **DJ Lia** armadas con sus gustos y su historial.
 - **Un admin** puede hacer todo eso y además crear, editar y borrar artistas, álbumes y canciones, con subida de audio mp3 e imágenes.
 
 ## Índice
@@ -21,6 +21,8 @@ API REST de APIMusic, un catálogo musical para escuchar canciones, guardar favo
    - [Géneros](#géneros)
    - [Playlists](#playlists)
    - [Favoritos](#favoritos)
+   - [Historial](#historial)
+   - [DJ Lia](#dj-lia)
 7. [Ejemplos con curl](#ejemplos-con-curl)
 8. [Correos](#correos)
 9. [Tests](#tests)
@@ -181,15 +183,21 @@ Se leen en [`app/config.py`](app/config.py). La plantilla está en [`.env.exampl
 | `FIREBASE_CREDENCIALES` | Ruta al JSON de la cuenta de servicio. Si el archivo no existe, se usan las credenciales por defecto de Google Cloud (ver [Despliegue](#despliegue-opcional)). | En local, sí | `serviceAccountKey.json` |
 | `FIREBASE_BUCKET` | Bucket de Storage (sin `gs://`). | **Sí**: sin él, la app no arranca. | `''` |
 | `FIREBASE_WEB_API_KEY` | Clave de API web de Firebase, para comprobar correo y clave en `/auth/login`. | **Sí** para el login con correo | `''` |
-| `CORS_ORIGENES` | Origen permitido por CORS: `*` o **una sola** URL (por ejemplo `http://localhost:5173`). | No | `*` |
-| `NOMBRE_APP` | Nombre que aparece en los asuntos, el remitente y las plantillas de correo. | No | `APIMusic` |
-| `LOGO_URL` | URL pública de un PNG para la cabecera de los correos. Si está vacía, se usa un círculo verde con ♫. | No | `''` |
+| `CORS_ORIGENES` | Orígenes permitidos por CORS: `*` o una o varias URL separadas por comas (por ejemplo `http://localhost:5173,https://apimusic-mvp.web.app`). | No | `*` |
+| `NOMBRE_APP` | Nombre que aparece en los asuntos, el remitente y las plantillas de correo. | No | `UnderTone` |
+| `LOGO_URL` | URL pública de un PNG para la cabecera de los correos. Si está vacía, se usa un cuadrado rosa con el logo dibujado en HTML. | No | `''` |
 | `WEB_URL` | Enlace del botón «Empezar a escuchar» del correo de bienvenida. | No | `http://localhost:5173` |
 | `SMTP_HOST` | Servidor SMTP. **Si está vacío, los correos (con los códigos) se imprimen en la consola de la API** en lugar de enviarse. | No | `''` |
 | `SMTP_PUERTO` | `587` usa STARTTLS y `465` usa SSL directo. | No | `587` |
 | `SMTP_USUARIO` | Usuario para iniciar sesión en el servidor SMTP. | Si hay `SMTP_HOST` | `''` |
 | `SMTP_CLAVE` | Clave SMTP. En Gmail es una contraseña de aplicación. | Si hay `SMTP_HOST` | `''` |
 | `CORREO_REMITENTE` | Dirección que aparece en «De:». Si está vacía, se usa `SMTP_USUARIO`. | No | `''` |
+| `TTS_ACTIVO` | `si` para que DJ Lia hable con la voz de Google (Text-to-Speech). Con `no`, la web usa la voz del navegador. | No | `no` |
+| `TTS_VOZ` | Voz de Google Chirp 3 HD, con el formato `es-US-Chirp3-HD-<Nombre>`. | No | `es-US-Chirp3-HD-Laomedeia` |
+| `TTS_VELOCIDAD` | Velocidad de la voz (0.25 a 2.0). Un poco más de 1 suena más animado. | No | `1.05` |
+| `TTS_LIMITE_MENSUAL` | Caracteres de voz al mes. Al llegar, deja de pedir voz a Google. Google regala 1.000.000 al mes. | No | `800000` |
+| `DJ_SESIONES_VOZ_DIA` | Sesiones del DJ con voz de Google por usuario al día. | No | `20` |
+| `NOMBRE_DJ` | Nombre con el que se presenta el DJ. | No | `Lia` |
 
 Estos valores están fijos en `Config` y no se leen del `.env`:
 
@@ -210,11 +218,11 @@ Si dejas `SMTP_HOST=` vacío, la API usa `CorreoConsola`, que imprime cada corre
 ```
 ============================================================
 📧 Correo para ana@example.com
-Asunto: 123456 es tu código de APIMusic
+Asunto: 123456 es tu código de UnderTone
 
 Hola Ana,
 
-Tu código para confirmar tu cuenta de APIMusic es: 123456
+Tu código para confirmar tu cuenta de UnderTone es: 123456
 ...
 ============================================================
 ```
@@ -226,7 +234,7 @@ Sirve para desarrollar sin configurar correo.
 Gmail no deja usar tu contraseña normal por SMTP. Para la cuenta que va a enviar los correos:
 
 1. Activa la **verificación en dos pasos** en <https://myaccount.google.com/security>. Sin ella no aparece la opción del paso siguiente.
-2. Entra a <https://myaccount.google.com/apppasswords>, escribe un nombre (por ejemplo `APIMusic`) y pulsa **Crear**.
+2. Entra a <https://myaccount.google.com/apppasswords>, escribe un nombre (por ejemplo `UnderTone`) y pulsa **Crear**.
 3. Copia la clave de 16 letras en `SMTP_CLAVE`. Los espacios no importan.
 4. Usa `SMTP_HOST=smtp.gmail.com`, `SMTP_PUERTO=587`, y pon esa misma cuenta en `SMTP_USUARIO` y `CORREO_REMITENTE`.
 
@@ -346,7 +354,7 @@ Las respuestas incluyen solo la URL pública (con token de descarga), nunca la r
 
 | Método | Ruta | Acceso | Respuesta |
 |---|---|---|---|
-| GET | `/` | público | `{"message": "Bienvenido a APIMusic 🎵", "recursos": ["/auth", "/songs", ...]}` |
+| GET | `/` | público | `{"message": "Bienvenido a UnderTone 🎵", "recursos": ["/auth", "/songs", ...]}` |
 | — | ruta inexistente | — | 404 `{"error": "Ruta no encontrada"}` |
 | — | método no admitido | — | 405 `{"error": "Método no permitido"}` |
 
@@ -751,6 +759,47 @@ Los favoritos son de cada usuario. Se guardan en `usuarios/{uid}/favoritos/{canc
 | PUT | `/me/favorites/<cancion_id>` | usuario | **200** `{"message": "Agregada a favoritos"}`. Si ya estaba, no se duplica. **404** si la canción no existe |
 | DELETE | `/me/favorites/<cancion_id>` | usuario | **200** `{"message": "Quitada de favoritos"}`, aunque no estuviera en la lista |
 
+### Historial
+
+La web avisa cada vez que empieza a sonar una canción. Se guarda en `usuarios/{uid}/historial` y lo usa el DJ.
+
+| Método | Ruta | Acceso | Respuesta |
+|---|---|---|---|
+| POST | `/me/history` | usuario | Cuerpo `{"cancion_id": "..."}`. **201** `{"message": "Escucha registrada"}`. **400** sin `cancion_id`, **404** si la canción no existe |
+| GET | `/me/history` | usuario | **200**: hasta 30 canciones escuchadas, sin repetir, de la más reciente a la más vieja |
+
+### DJ Lia
+
+DJ Lia arma una sesión de hasta 3 bloques de 4 canciones y escribe lo que dice antes de cada bloque. No usa una IA paga: las frases salen de plantillas en español ([`app/dj.py`](app/dj.py)). Para que suenen habladas, cada frase nombra la primera canción del bloque y quién la canta (con invitados), comenta si ya es favorita y usa comas, puntos suspensivos y pausas `[pause short]` de Chirp 3 HD. A Google le llega la frase con pausas (como `markup`); la web la recibe limpia.
+
+**Cómo escoge:** suma los gustos del usuario (un me gusta pesa 3 y una escucha pesa 1) para sacar su artista y su género favoritos. No repite canciones dentro de una sesión y deja de últimas las que sonaron hace poco.
+
+| Vibra | Bloques |
+|---|---|
+| `mix` (por defecto) | Favoritas → su género favorito → descubrir → mix |
+| `favoritas` | Favoritas → su artista favorito → mix |
+| `descubrir` | Canciones que no ha escuchado ni marcado → mix |
+| un género (`rock`, `salsa`…) | Ese género → mix |
+
+**Voz:** si `TTS_ACTIVO` es `si`, cada frase se convierte en mp3 con Google Text-to-Speech (Chirp 3 HD) y se guarda en Storage (`dj/voz/<hash>.mp3`). Para no gastar:
+
+- **Caché:** una frase ya generada se reutiliza y no vuelve a costar.
+- **Tope mensual:** lleva la cuenta de caracteres del mes en `dj/uso_AAAA-MM`. Si una frase no cabe en `TTS_LIMITE_MENSUAL`, va sin audio y la web usa la voz del navegador.
+- **Límite diario:** cada usuario tiene `DJ_SESIONES_VOZ_DIA` sesiones con voz de Google al día.
+- **Si Google falla**, la sesión responde igual, sin audio.
+
+| Método | Ruta | Acceso | Respuesta |
+|---|---|---|---|
+| POST | `/dj/session` | usuario | Cuerpo opcional `{"vibra": "mix", "hora": 15}` (hora local 0–23, para el saludo). **200** `{"dj": "Lia", "vibra": "mix", "voz": "google" \| "navegador", "bloques": [{"tipo", "frase", "audio_url", "canciones": [...]}]}`. **404** si no hay canciones |
+| GET | `/dj/usage` | admin | **200** `{"mes": "2026-11", "caracteres": 1234, "limite": 800000, "gratis_google": 1000000, "voz_activa": true}` |
+
+**Activar la voz en Google Cloud:**
+
+1. `gcloud services enable texttospeech.googleapis.com --project <tu-proyecto>`
+2. Pon `TTS_ACTIVO=si` en el `.env` y `TTS_ACTIVO: "si"` en `env.yaml`.
+3. Si los logs dicen `Text-to-Speech respondió 403`, dale el rol `roles/serviceusage.serviceUsageConsumer` a la cuenta de servicio.
+4. Crea una alerta de presupuesto (Facturación → Presupuestos y alertas). La alerta solo avisa; el que corta es `TTS_LIMITE_MENSUAL`.
+
 ## Ejemplos con curl
 
 Estos comandos funcionan igual en **PowerShell** y en **bash**:
@@ -852,18 +901,18 @@ Las plantillas están en [`app/servicios/correo.py`](app/servicios/correo.py). C
 
 | Plantilla | Cuándo se envía | Asunto |
 |---|---|---|
-| `plantilla_codigo` | Registro, reenvío y nuevo registro sin confirmar | `123456 es tu código de APIMusic` |
-| `plantilla_bienvenida` | Al confirmar el correo, o en el primer login con Google | `¡Bienvenido a APIMusic, Ana! 🎧` |
+| `plantilla_codigo` | Registro, reenvío y nuevo registro sin confirmar | `123456 es tu código de UnderTone` |
+| `plantilla_bienvenida` | Al confirmar el correo, o en el primer login con Google | `¡Bienvenido a UnderTone, Ana! 🎧` |
 | `plantilla_recuperacion` | `/auth/forgot` | `123456 es tu código para restablecer tu contraseña` |
 
 Diseño:
 
-- Tema oscuro con acento verde `#1ed760`. La tarjeta mide como máximo 480 px.
+- Tema oscuro con acento rosa `#FF3B5C`. La tarjeta mide como máximo 480 px.
 - Cabecera con el logo y `NOMBRE_APP`.
 - En los correos con código, cada dígito va en su propia casilla, con un aviso «Vence en 15 minutos» y una nota de seguridad.
 - El correo de bienvenida lista lo que se puede hacer en la app e incluye un botón «Empezar a escuchar →» que apunta a `WEB_URL`.
 - El HTML está hecho **con tablas y estilos en línea, sin `<style>` ni flexbox**, porque es lo único que Gmail, Outlook y Apple Mail muestran de la misma forma. Un test comprueba que no haya `<style`.
-- **`LOGO_URL` debe ser la URL pública de un PNG**, accesible sin iniciar sesión: por ejemplo, un archivo en Storage con token de descarga o en la carpeta `public/` de la web ya desplegada. Gmail no muestra SVG ni imágenes en `localhost`. Si `LOGO_URL` está vacía, se muestra un círculo verde con ♫ hecho en HTML.
+- **`LOGO_URL` debe ser la URL pública de un PNG**, accesible sin iniciar sesión: por ejemplo, un archivo en Storage con token de descarga o en la carpeta `public/` de la web ya desplegada. Gmail no muestra SVG ni imágenes en `localhost`. Si `LOGO_URL` está vacía, se muestra un cuadrado rosa con el logo dibujado en HTML.
 
 ## Tests
 
@@ -875,7 +924,7 @@ pytest -q -k playlist                      # por nombre
 
 Usan `create_app` con servicios en memoria: no tocan Firebase, no envían correos y no necesitan `.env`.
 
-**Resultado actual:** `103 passed in 1.78s` (Python 3.13.3).
+**Resultado actual:** `119 passed in 1.95s` (Python 3.13).
 
 | Archivo | Tests | Qué cubre |
 |---|---|---|
@@ -884,6 +933,7 @@ Usan `create_app` con servicios en memoria: no tocan Firebase, no envían correo
 | [`test_artistas_albumes.py`](tests/test_artistas_albumes.py) | 17 | Artista con foto; nombre repetido (409); validaciones; permisos; orden alfabético y búsqueda; perfil con álbumes, canciones y apariciones; propagación al renombrar; no se borra un artista con canciones; borrar un artista libre. Álbum: crear, validaciones, título repetido para el mismo artista, orden de pistas y totales, propagación del título y la portada a las canciones, filtro por artista, no se borra con canciones, 404 |
 | [`test_playlists_favoritos.py`](tests/test_playlists_favoritos.py) | 12 | Playlist de rock de 12 minutos (la que no cabe se salta), todos los géneros, errores 400 y 404, sin token; flujo de favoritos (sin duplicados, son de cada usuario, se quitan), favorito de una canción borrada, canción inexistente, sin token |
 | [`test_recuperar.py`](tests/test_recuperar.py) | 8 | Flujo completo de recuperación (la clave vieja deja de servir); correo inexistente responde igual y no envía nada; límite de intentos; el código sirve una sola vez; espera entre envíos; el código de registro no sirve para restablecer; la recuperación también confirma una cuenta pendiente; validaciones |
+| [`test_dj.py`](tests/test_dj.py) | 16 | Historial (sin repetir, validaciones); DJ sin canciones y sin token; mix que empieza por favoritas y sigue con el género; vibra por género y descubrir; catálogo pequeño; voz de Google con caché; tope mensual que pasa a la voz del navegador; límite diario; Google caído; voz apagada; `/dj/usage` solo admin; frases que nombran la canción y los invitados; las pausas se quitan para la pantalla |
 | [`test_correo.py`](tests/test_correo.py) | 6 | `CorreoSMTP` arma el mensaje con STARTTLS, login y partes de texto y HTML (con un SMTP falso); casillas y logo en la plantilla; respaldo sin logo; bienvenida al verificar; con Google la bienvenida se envía solo la primera vez; si falla el SMTP responde 502 y se puede reintentar |
 
 **Fixtures y ayudas de [`conftest.py`](tests/conftest.py):**
@@ -915,6 +965,8 @@ api/
 │   ├── albumes.py             # Blueprint /albums: CRUD, tipos, título único por artista, tracklist ordenado
 │   ├── playlists.py           # Blueprint /playlists: generador por duración y género
 │   ├── favoritos.py           # Blueprint /me/favorites: listar, agregar y quitar
+│   ├── historial.py           # Blueprint /me/history: registrar y listar lo escuchado
+│   ├── dj.py                  # Blueprint /dj: selección, frases, voz con caché y tope mensual
 │   ├── validacion.py          # Lectura de JSON o multipart, validadores, archivos, duración del mp3
 │   ├── repos/
 │   │   ├── firestore_repo.py  # ColeccionFirestore y UsuariosFirestore (con subcolección de favoritos)
@@ -923,7 +975,8 @@ api/
 │       ├── __init__.py        # Dataclass Servicios y servicios() para obtenerlos desde la app
 │       ├── firebase.py        # StorageFirebase, AuthFirebase, _credenciales y crear_servicios_firebase
 │       ├── memoria.py         # StorageMemoria, AuthMemoria y crear_servicios_memoria
-│       └── correo.py          # CorreoSMTP, CorreoConsola, CorreoMemoria y las plantillas HTML
+│       ├── correo.py          # CorreoSMTP, CorreoConsola, CorreoMemoria y las plantillas HTML
+│       └── voz.py             # VozGoogle (Text-to-Speech) y VozMemoria para los tests
 ├── tests/
 │   ├── conftest.py            # Fixtures (client, usuario, admin, artista, album, crear...) y ayudas
 │   └── test_*.py              # Tests por área (ver la sección Tests)

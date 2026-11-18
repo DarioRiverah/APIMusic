@@ -30,7 +30,7 @@ export default function Login() {
   }
 
   return (
-    <AuthCaja titulo="Inicia sesión" subtitulo="Escucha tu música favorita en APIMusic.">
+    <AuthCaja titulo="Inicia sesión" subtitulo="Escucha tu música favorita en UnderTone.">
       {aviso && <div className="alerta alerta-info">{aviso}</div>}
       {error && <div className="alerta alerta-error">{error}</div>}
 

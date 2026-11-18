@@ -40,7 +40,7 @@ def test_smtp_arma_el_mensaje(monkeypatch):
 # ---------- Plantillas ----------
 def test_plantilla_codigo_casillas_y_logo():
     from app.servicios.correo import plantilla_codigo
-    texto, html = plantilla_codigo('Laura', '482913', 15, 'APIMusic', 'https://cdn/logo.png')
+    texto, html = plantilla_codigo('Laura', '482913', 15, 'UnderTone', 'https://cdn/logo.png')
     assert 'es: 482913' in texto
     for d in '482913':
         assert f'>{d}</div></td>' in html                 # cada dígito en su casilla

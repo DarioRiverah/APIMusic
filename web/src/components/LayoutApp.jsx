@@ -4,6 +4,7 @@ import { useAuth } from '../auth.jsx'
 import { useFavoritos } from '../favoritos.jsx'
 import BarraReproductor from './BarraReproductor.jsx'
 import Icono from './Icono.jsx'
+import Marca from './Marca.jsx'
 
 export default function LayoutApp() {
   const { sesion, esAdmin } = useAuth()
@@ -22,14 +23,14 @@ export default function LayoutApp() {
     { a: '/buscar', icono: 'buscar', texto: 'Buscar' },
     { a: '/favoritos', icono: 'corazon', texto: 'Tus me gusta', n: total },
     { a: '/generar', icono: 'varita', texto: 'Generar playlist' },
+    { a: '/ajustes', icono: 'ajustes', texto: 'Ajustes' },
   ]
 
   return (
     <div className="app-shell">
       <aside className="lateral">
-        <Link to="/" className="marca lateral-marca">
-          <span className="marca-logo"><Icono nombre="logo" tam={18} /></span>
-          APIMusic
+        <Link to="/" className="lateral-marca" aria-label="UnderTone, ir al inicio">
+          <Marca />
         </Link>
         <nav className="lateral-nav" aria-label="Principal">
           {enlaces.map((e) => (

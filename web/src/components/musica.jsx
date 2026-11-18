@@ -33,7 +33,7 @@ export function BotonFavorito({ id, tam = 18 }) {
   )
 }
 
-/** Botón verde redondo de "reproducir todo". Pausa si esa lista ya está sonando. */
+/** Botón redondo del color de acento de "reproducir todo". Pausa si esa lista ya está sonando. */
 export function BotonReproducir({ canciones, grande = false, etiqueta = 'Reproducir', contexto }) {
   const { reproducir, alternar, actual, sonando, contexto: actualCtx } = useReproductor()
   const clave = contexto ?? claveLista(canciones)
@@ -133,7 +133,7 @@ export function Seccion({ titulo, children, accion }) {
 }
 
 /** Cabecera grande con imagen (álbum, artista, playlist). */
-export function Cabecera({ imagen, redondo, icono, tipo, titulo, children, color = '#1ed760' }) {
+export function Cabecera({ imagen, redondo, icono, tipo, titulo, children, color = 'var(--acento)' }) {
   return (
     <header className="cabecera" style={{ '--color-cabecera': color }}>
       <Imagen url={imagen} className={`cabecera-img ${redondo ? 'redondo' : ''}`} icono={icono} tam={64} />

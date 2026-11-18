@@ -25,18 +25,22 @@ def create_app(config=None, servicios=None):
     from .favoritos import bp as favoritos_bp
     from .artistas import bp as artistas_bp
     from .albumes import bp as albumes_bp
+    from .historial import bp as historial_bp
+    from .dj import bp as dj_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(artistas_bp)
     app.register_blueprint(albumes_bp)
     app.register_blueprint(canciones_bp)
     app.register_blueprint(playlists_bp)
     app.register_blueprint(favoritos_bp)
+    app.register_blueprint(historial_bp)
+    app.register_blueprint(dj_bp)
 
     @app.get('/')
     def root():
-        return jsonify({'message': 'Bienvenido a APIMusic 🎵',
+        return jsonify({'message': 'Bienvenido a UnderTone 🎵',
                         'recursos': ['/auth', '/songs', '/artists', '/albums',
-                                     '/playlists', '/me/favorites']})
+                                     '/playlists', '/me/favorites', '/me/history', '/dj/session']})
 
     @app.get('/genres')
     def generos():

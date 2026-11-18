@@ -4,6 +4,7 @@ import { useAuth } from '../../auth.jsx'
 import { useCatalogo } from '../../catalogo.jsx'
 import BarraReproductor from '../BarraReproductor.jsx'
 import Icono from '../Icono.jsx'
+import Marca from '../Marca.jsx'
 
 export default function LayoutAdmin() {
   const { sesion, cerrarSesion } = useAuth()
@@ -25,9 +26,8 @@ export default function LayoutAdmin() {
   return (
     <div className="app">
       <header className="barra">
-        <Link to="/" className="marca" title="Volver a la app">
-          <span className="marca-logo"><Icono nombre="logo" tam={18} /></span>
-          APIMusic <span className="marca-tag">Admin</span>
+        <Link to="/" className="marca-enlace" title="Volver a la app">
+          <Marca tam={32} tag="Admin" />
         </Link>
         <nav className="pestanas" aria-label="Secciones">
           {pestanas.map((p) => (

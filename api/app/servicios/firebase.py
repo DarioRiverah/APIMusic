@@ -10,6 +10,7 @@ from firebase_admin import auth as fb_auth, credentials, firestore, storage
 from . import Servicios
 from ..repos.firestore_repo import ColeccionFirestore, UsuariosFirestore
 from .correo import CorreoConsola, CorreoSMTP
+from .voz import VozGoogle
 
 
 class ErrorAuth(Exception):
@@ -104,4 +105,7 @@ def crear_servicios_firebase(config):
                 if config['SMTP_HOST'] else CorreoConsola()),
         storage=StorageFirebase(storage.bucket()),
         auth=AuthFirebase(config['FIREBASE_WEB_API_KEY']),
+        dj=ColeccionFirestore(db, 'dj'),
+        voz=(VozGoogle(config['TTS_VOZ'], config['FIREBASE_CREDENCIALES'], config['TTS_VELOCIDAD'])
+             if config['TTS_ACTIVO'] else None),
     )

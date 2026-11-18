@@ -1,8 +1,10 @@
 <div align="center">
 
-# 🎵 APIMusic
+<img src="web/public/favicon.svg" width="72" alt="Logo de UnderTone">
 
-**Plataforma de streaming de música tipo Spotify: API REST en Flask + reproductor web en React, sobre Firebase.**
+# UnderTone
+
+**Plataforma de streaming de música con estructura tipo Spotify y estilo Apple Music: API REST en Flask + reproductor web en React, sobre Firebase. Incluye DJ Lia, un DJ con voz que te presenta la música.**
 
 [**▶ Ver demo en vivo**](https://apimusic-mvp.web.app) · [Documentación de la API](api/README.md) · [Documentación de la web](web/README.md)
 
@@ -19,15 +21,17 @@
 
 ## ¿Qué es?
 
-APIMusic es un MVP de una plataforma para escuchar música. Los usuarios crean su cuenta, exploran artistas y álbumes, guardan sus canciones favoritas y generan playlists que caben justo en el tiempo que tienen. Los administradores gestionan todo el catálogo desde un panel dentro de la misma app.
+UnderTone (antes APIMusic) es un MVP de una plataforma para escuchar música. Los usuarios crean su cuenta, exploran artistas y álbumes, guardan sus canciones favoritas y generan playlists que caben justo en el tiempo que tienen. Los administradores gestionan todo el catálogo desde un panel dentro de la misma app.
 
 ### Para usuarios
 - 🔐 Registro con código de confirmación por correo, inicio de sesión con **Google** y recuperación de contraseña.
 - 🎧 Reproductor global con cola, aleatorio, repetir, barra de progreso y controles desde la pantalla de bloqueo del celular.
 - 🔎 Búsqueda por canción, artista, álbum o género.
-- 💚 "Tus me gusta" para guardar favoritas.
+- ❤️ "Tus me gusta" para guardar favoritas.
 - ✨ **Generar playlist**: dices cuántos minutos tienes (y si quieres, un género) y arma una lista que cabe en ese tiempo.
-- 📱 Diseño adaptado a celular, con barra inferior al estilo de la app de Spotify.
+- 🎙️ **DJ Lia**: arma sesiones según tus me gusta y lo que escuchas, y te las presenta con voz (Google Chirp 3 HD, con tope gratis; si no hay, usa la voz del navegador). Vibras: mix, favoritas, descubrir o por género.
+- 🎨 **Ajustes**: color de la app, temas animados para la barra de reproducción (cohete, pato, gato, rana…), grosor de la barra, fondo negro OLED, tamaño de letra, temporizador de sueño y voz del DJ.
+- 📱 Diseño adaptado a celular, con reproductor flotante y barra inferior de navegación.
 
 ### Para administradores (`/admin`)
 - Crear, editar y eliminar **canciones** (subiendo el mp3), **artistas** (con foto y géneros) y **álbumes** (álbum, EP o sencillo).
@@ -47,13 +51,16 @@ APIMusic es un MVP de una plataforma para escuchar música. Los usuarios crean s
              ▼                                                        ▼
       ┌───────────────┐                    ┌───────────────┬───────────────┬────────────────┐
       │ Firebase Auth │ ◀───────────────── │   Firestore   │    Storage    │  Gmail (SMTP)  │
-      └───────────────┘                    │    (datos)    │ (mp3 e imgs)  │   (códigos)    │
-                                           └───────────────┴───────────────┴────────────────┘
+      └───────────────┘                    │    (datos)    │ (mp3, imgs,   │   (códigos)    │
+                                           │               │  voz del DJ)  │                │
+                                           └───────────────┴───────┬───────┴────────────────┘
+                                                                   │
+                                                       Google Text-to-Speech (DJ Lia)
 ```
 
 - La **web** no habla directo con la base de datos: todo pasa por la API. Firebase en el navegador solo se usa para el botón de Google.
 - La **API** valida, guarda en Firestore, sube los archivos a Storage y emite su propio **JWT** (con rol `usuario` o `admin`).
-- Los servicios se inyectan (`Servicios`), así que los **104 tests** corren con implementaciones en memoria, sin tocar Firebase ni enviar correos.
+- Los servicios se inyectan (`Servicios`), así que los **119 tests** corren con implementaciones en memoria, sin tocar Firebase ni enviar correos.
 
 ---
 
@@ -63,11 +70,11 @@ APIMusic es un MVP de una plataforma para escuchar música. Los usuarios crean s
 APIMusic/
 ├── api/            API REST en Flask      → ver api/README.md
 │   ├── app/        blueprints, servicios (Firebase / memoria), plantillas de correo
-│   ├── tests/      pytest (104 pruebas)
+│   ├── tests/      pytest (119 pruebas)
 │   ├── Dockerfile  imagen para Cloud Run
 │   └── crear_admin.py
 ├── web/            Reproductor + panel admin en React → ver web/README.md
-│   ├── src/        páginas, componentes y contextos (auth, catálogo, favoritos, reproductor)
+│   ├── src/        páginas, componentes y contextos (ajustes, auth, catálogo, favoritos, reproductor)
 │   └── public/     favicon y logo de los correos
 └── README.md
 ```
@@ -114,6 +121,8 @@ pytest -q
 
 En Cloud Run no se sube `serviceAccountKey.json`: la API usa las credenciales de la cuenta de servicio del propio Cloud Run.
 
+Para la voz del DJ hay que habilitar Text-to-Speech una vez (`gcloud services enable texttospeech.googleapis.com`) y poner `TTS_ACTIVO: "si"` en `env.yaml`. Los detalles y el tope de costo están en [`api/README.md`](api/README.md#dj-lia).
+
 ---
 
 ## Seguridad
@@ -122,6 +131,7 @@ En Cloud Run no se sube `serviceAccountKey.json`: la API usa las credenciales de
 - Los códigos de verificación se guardan solo como **hash HMAC**, vencen en 15 minutos, admiten 5 intentos y tienen 60 segundos de espera entre reenvíos.
 - La recuperación de contraseña no revela si un correo está registrado.
 - Las llaves (`serviceAccountKey.json`, `.env`, `env.yaml`) están en `.gitignore` y nunca se suben al repositorio.
+- La voz del DJ se genera solo en la API; la web nunca ve credenciales de Google Cloud. Un tope mensual de caracteres evita pasar del plan gratis.
 
 ---
 
